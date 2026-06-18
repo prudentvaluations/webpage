@@ -5,12 +5,27 @@ export default function Contact() {
         <p className="eyebrow eyebrow-light">Get in Touch</p>
         <h2 id="contact-title">Request a Valuation</h2>
         <p className="contact-lead">
-          Send us a short message with your asset details and the purpose of the report, and we&apos;ll
-          get back to you.
+          Share your asset details and the purpose of the report. We review the requirement, confirm the
+          documents needed, and respond with a clear fee and timeline — usually within one working day.
         </p>
         <a className="btn btn-primary btn-lg" href="mailto:prudentvaluations@gmail.com">
           prudentvaluations@gmail.com
         </a>
+
+        <ul className="contact-meta" role="list">
+          <li>
+            <span className="contact-meta__label">Phone</span>
+            <a href="tel:+923214340094">+92 321 4340094</a>
+          </li>
+          <li>
+            <span className="contact-meta__label">Office Hours</span>
+            <span>Mon&ndash;Fri &middot; 10 AM &ndash; 6 PM</span>
+          </li>
+          <li>
+            <span className="contact-meta__label">Office</span>
+            <span>Main Boulevard, Gulberg, Lahore</span>
+          </li>
+        </ul>
       </div>
     </section>
   );

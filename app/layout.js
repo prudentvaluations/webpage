@@ -1,5 +1,9 @@
 import { Inter, Fraunces, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import BackToTop from "@/components/BackToTop";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -82,6 +86,12 @@ const jsonLd = {
     addressCountry: "PK",
   },
   areaServed: "PK",
+  openingHoursSpecification: {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    opens: "10:00",
+    closes: "18:00",
+  },
   serviceType: [
     "Property Valuation",
     "Gold Valuation",
@@ -96,10 +106,20 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable} ${playfair.variable}`}>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('reveal-ready');}}catch(e){}})();",
+          }}
+        />
         <a className="skip-link" href="#main">
           Skip to content
         </a>
+        <Header />
         {children}
+        <Footer />
+        <BackToTop />
+        <ScrollReveal />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

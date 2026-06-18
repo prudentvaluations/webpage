@@ -5,7 +5,7 @@ const SERVICES = [
     body: "Accurate, market-based valuations of residential, commercial, and plot property for personal, financial, and legal needs.",
   },
   {
-    icon: "\u{1F9C8}",
+    icon: "\u{1F48D}",
     title: "Gold Valuation",
     body: "Gold and jewellery assessed by purity, weight, and current market rates, with a clear written report.",
   },
@@ -46,15 +46,24 @@ export default function Services() {
 
         <ul className="cards" role="list">
           {SERVICES.map((service) => (
-            <li className="card" key={service.title}>
-              <span className="card-icon" aria-hidden="true">
-                {service.icon}
-              </span>
-              <h3>{service.title}</h3>
-              <p>{service.body}</p>
+            <li key={service.title}>
+              <a className="card card-link" href="/services">
+                <span className="card-icon" aria-hidden="true">
+                  {service.icon}
+                </span>
+                <h3>{service.title}</h3>
+                <p>{service.body}</p>
+                <span className="card-more">Learn more &rarr;</span>
+              </a>
             </li>
           ))}
         </ul>
+
+        <div className="section-cta">
+          <a className="btn btn-primary" href="/services">
+            View All Services
+          </a>
+        </div>
       </div>
     </section>
   );

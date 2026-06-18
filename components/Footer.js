@@ -1,8 +1,9 @@
 const QUICK_LINKS = [
-  { href: "#services", label: "Services" },
-  { href: "#about", label: "About" },
-  { href: "#process", label: "Process" },
-  { href: "#contact", label: "Contact" },
+  { href: "/services", label: "Services" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
+  { href: "/#process", label: "Process" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export default function Footer() {

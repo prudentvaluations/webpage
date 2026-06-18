@@ -5,10 +5,11 @@ import Image from "next/image";
 import icon from "@/public/assets/logo-icon.png";
 
 const LINKS = [
-  { href: "#top", label: "Home" },
-  { href: "#services", label: "Services" },
-  { href: "#process", label: "Process" },
-  { href: "#contact", label: "Contact" },
+  { href: "/", label: "Home" },
+  { href: "/services", label: "Services" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export default function Header() {
@@ -17,7 +18,7 @@ export default function Header() {
   return (
     <header className="site-header" id="top">
       <div className="container header-inner">
-        <a className="brand" href="#top" aria-label="Prudent Valuations home">
+        <a className="brand" href="/" aria-label="Prudent Valuations home">
           <Image
             src={icon}
             alt="Prudent Valuations logo"
