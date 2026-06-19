@@ -61,7 +61,11 @@ export const metadata = {
     images: ["/assets/og-image.png"],
   },
   icons: {
-    icon: "/assets/favicon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/assets/favicon.png", type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: "/favicon.ico",
     apple: "/assets/apple-touch-icon.png",
   },
 };
@@ -72,33 +76,68 @@ export const viewport = {
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  name: "Prudent Valuations",
-  image: `${siteUrl}/assets/og-image.png`,
-  description,
-  url: siteUrl,
-  email: "prudentvaluations@gmail.com",
-  telephone: "+92-321-4340094",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "2nd Floor, Liberty, Main Boulevard, Gulberg",
-    addressLocality: "Lahore",
-    addressCountry: "PK",
-  },
-  areaServed: "PK",
-  openingHoursSpecification: {
-    "@type": "OpeningHoursSpecification",
-    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    opens: "10:00",
-    closes: "18:00",
-  },
-  serviceType: [
-    "Property Valuation",
-    "Gold Valuation",
-    "Vehicle Valuation",
-    "Movable Asset Valuation",
-    "Immovable Asset Valuation",
-    "General Asset Valuation Reports",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "Prudent Valuations",
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/assets/logo.png`,
+        width: 1272,
+        height: 434,
+      },
+      image: `${siteUrl}/assets/og-image.png`,
+      email: "prudentvaluations@gmail.com",
+      telephone: "+92-321-4340094",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "2nd Floor, Liberty, Main Boulevard, Gulberg",
+        addressLocality: "Lahore",
+        addressCountry: "PK",
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "Prudent Valuations",
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+    {
+      "@type": "ProfessionalService",
+      "@id": `${siteUrl}/#business`,
+      name: "Prudent Valuations",
+      image: `${siteUrl}/assets/og-image.png`,
+      logo: `${siteUrl}/assets/logo.png`,
+      description,
+      url: siteUrl,
+      email: "prudentvaluations@gmail.com",
+      telephone: "+92-321-4340094",
+      parentOrganization: { "@id": `${siteUrl}/#organization` },
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "2nd Floor, Liberty, Main Boulevard, Gulberg",
+        addressLocality: "Lahore",
+        addressCountry: "PK",
+      },
+      areaServed: "PK",
+      openingHoursSpecification: {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        opens: "10:00",
+        closes: "18:00",
+      },
+      serviceType: [
+        "Property Valuation",
+        "Gold Valuation",
+        "Vehicle Valuation",
+        "Movable Asset Valuation",
+        "Immovable Asset Valuation",
+        "General Asset Valuation Reports",
+      ],
+    },
   ],
 };
 
