@@ -23,7 +23,7 @@ export default function Contact() {
           </li>
           <li>
             <span className="contact-meta__label">Office</span>
-            <span>Main Boulevard, Gulberg, Lahore</span>
+            <span>2nd Floor, Liberty, Main Boulevard, Gulberg, Lahore</span>
           </li>
         </ul>
       </div>
