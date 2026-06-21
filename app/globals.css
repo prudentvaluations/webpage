@@ -1,4 +1,4 @@
-/* ===== Prudent Valuations — base styles ===== */
+/* ===== Prudent Valuations base styles ===== */
 :root {
   --purple: #5a2a82;
   --purple-deep: #3a0f55;
@@ -181,12 +181,19 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .nav-menu a:hover { color: var(--purple); text-decoration: none; }
 .nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap;
   background: var(--purple);
   color: #fff !important;
-  padding: 0.55rem 1.1rem;
+  padding: 0.55rem 1.05rem;
   border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(90, 42, 130, 0.22);
 }
 .nav-cta:hover { background: var(--purple-deep); }
+.nav-cta svg { flex: none; }
 
 .nav-toggle {
   display: none;
@@ -212,7 +219,7 @@ img { max-width: 100%; height: auto; display: block; }
   background: var(--bg-soft);
   border-bottom: 1px solid var(--line);
 }
-/* Animated aurora — slow, subtle, brand-coloured blooms */
+/* Animated aurora: slow, subtle, brand-coloured blooms */
 .hero-aurora {
   position: absolute;
   inset: -25%;
@@ -604,7 +611,13 @@ img { max-width: 100%; height: auto; display: block; }
   .nav-menu.open { display: flex; }
   .nav-menu li { border-top: 1px solid var(--line); }
   .nav-menu a { display: block; padding: 0.9rem 0.25rem; }
-  .nav-cta { text-align: center; margin-top: 0.7rem; }
+  .nav-menu .nav-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+  }
   .nav-menu li:first-child { border-top: 0; }
 }
 
@@ -736,7 +749,14 @@ img { max-width: 100%; height: auto; display: block; }
   border-radius: 999px;
 }
 .price-card h3 { font-size: 1.3rem; margin-bottom: 0.6rem; }
-.price-amount { display: flex; flex-direction: column; margin: 0 0 1.3rem; }
+.price-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0 0 1.9rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
 .price-unit {
   font-size: 0.74rem;
   text-transform: uppercase;
@@ -746,7 +766,7 @@ img { max-width: 100%; height: auto; display: block; }
 .price-value {
   font-family: var(--brand);
   font-weight: 700;
-  font-size: 2rem;
+  font-size: 2.1rem;
   color: var(--purple-deep);
   line-height: 1.1;
 }

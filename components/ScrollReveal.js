@@ -26,7 +26,7 @@ export default function ScrollReveal() {
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
 
-    // Only animate elements that start below the fold — anything already in
+    // Only animate elements that start below the fold; anything already in
     // view stays visible (no flash, better for LCP).
     const fold = window.innerHeight * 0.9;
     els.forEach((el) => {

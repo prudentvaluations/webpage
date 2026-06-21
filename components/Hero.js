@@ -26,7 +26,7 @@ export default function Hero() {
         </p>
         <p className="hero-sub">
           Clear, market-based valuation reports for property, gold, vehicles, and movable &amp;
-          immovable assets — prepared with accuracy and care.
+          immovable assets, prepared with accuracy and care.
         </p>
         <div className="hero-actions">
           <a className="btn btn-primary" href="mailto:support@prudentvaluations.com">

@@ -17,7 +17,7 @@ export default function VerifyPage() {
           <h1>Verify a Valuation Report</h1>
           <p className="page-hero-sub">
             Confirm that a Prudent Valuations report is genuine and check its current status. Enter the
-            report reference and the owner&apos;s CNIC — no account needed.
+            report reference and the owner&apos;s CNIC. No account is needed.
           </p>
         </div>
       </section>

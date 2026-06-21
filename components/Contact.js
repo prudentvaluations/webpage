@@ -6,7 +6,7 @@ export default function Contact() {
         <h2 id="contact-title">Request a Valuation</h2>
         <p className="contact-lead">
           Share your asset details and the purpose of the report. We review the requirement, confirm the
-          documents needed, and respond with a clear fee and timeline — usually within one working day.
+          documents needed, and respond with a clear fee and timeline, usually within one working day.
         </p>
         <a className="btn btn-primary btn-lg" href="mailto:support@prudentvaluations.com">
           support@prudentvaluations.com

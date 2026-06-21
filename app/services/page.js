@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Services | Prudent Valuations",
   description:
-    "Professional valuation services in Pakistan — property, gold, vehicle, movable, immovable, and general asset valuation reports prepared to recognised standards.",
+    "Professional valuation services in Pakistan: property, gold, vehicle, movable, immovable, and general asset valuation reports prepared to recognised standards.",
   alternates: { canonical: "/services" },
 };
 
@@ -46,7 +46,7 @@ const SERVICES = [
     icon: "\u{1F4E6}",
     title: "Movable Asset Valuation",
     overview:
-      "Valuation of plant, machinery, equipment, and stock — the movable assets that strengthen a net-worth statement or business report.",
+      "Valuation of plant, machinery, equipment, and stock: the movable assets that strengthen a net-worth statement or business report.",
     covers: [
       "Plant, machinery & equipment",
       "Inventory and stock-in-trade",
@@ -70,7 +70,7 @@ const SERVICES = [
     icon: "\u{1F4CB}",
     title: "General Asset & Net-Worth Reports",
     overview:
-      "Comprehensive net-worth statements that bring all your holdings into one credible document — the asset proof most visa and immigration files require.",
+      "Comprehensive net-worth statements that bring all your holdings into one credible document, the asset proof most visa and immigration files require.",
     covers: [
       "Consolidated assets and liabilities",
       "Net-worth statements",
@@ -90,8 +90,8 @@ export default function ServicesPage() {
           <h1>Valuation Services for Every Asset</h1>
           <p className="page-hero-sub">
             From property and gold to vehicles and business assets, every report is built on real market
-            evidence and recognised methods — widely used for visa and immigration applications, as well
-            as financial, legal, and audit requirements.
+            evidence and recognised methods. They are widely used for visa and immigration applications,
+            as well as financial, legal, and audit requirements.
           </p>
         </div>
       </section>
@@ -104,7 +104,7 @@ export default function ServicesPage() {
               <strong>Trusted for visa &amp; immigration</strong>
               <p>
                 Our valuation reports provide the verified asset proof that embassies and consulates
-                require — prepared in clear, accepted formats that help applications move forward without
+                require, prepared in clear, accepted formats that help applications move forward without
                 objections.
               </p>
             </div>

@@ -1,12 +1,11 @@
 export const metadata = {
   title: "Pricing | Prudent Valuations",
   description:
-    "Transparent starting prices for property, gold, and vehicle valuation reports. Final pricing depends on asset type, location, and the purpose of the report.",
+    "Transparent starting prices for property, gold, vehicle, movable, immovable, and net-worth valuation reports. Final pricing depends on the asset, location, and purpose of the report.",
   alternates: { canonical: "/pricing" },
 };
 
-// NOTE: Property & Gold use the firm's published starting prices.
-// Adjust any figure here — it's the single source of truth for the page.
+// Starting prices. Adjust any figure here; it's the single source of truth for the page.
 const PACKAGES = [
   {
     name: "Property Valuation",
@@ -41,12 +40,45 @@ const PACKAGES = [
       "Documentation-ready report",
     ],
   },
+  {
+    name: "Movable Asset Valuation",
+    price: "Rs. 3,000",
+    unit: "starting from",
+    popular: false,
+    features: [
+      "Plant, machinery & equipment",
+      "Inventory and stock-in-trade",
+      "Replacement and fair-market basis",
+    ],
+  },
+  {
+    name: "Immovable Asset Valuation",
+    price: "Rs. 4,000",
+    unit: "starting from",
+    popular: false,
+    features: [
+      "Land, buildings & fixed assets",
+      "Standards-based fair value",
+      "Suitable for statements & legal use",
+    ],
+  },
+  {
+    name: "General Asset & Net-Worth Report",
+    price: "Rs. 8,000",
+    unit: "starting from",
+    popular: false,
+    features: [
+      "Consolidated assets & liabilities",
+      "Full net-worth statement",
+      "Visa & immigration ready",
+    ],
+  },
 ];
 
 const STEPS = [
   {
     title: "We review your requirement",
-    body: "We confirm the purpose of the valuation — financial, legal, audit, or documentation — so the report is fit for purpose.",
+    body: "We confirm the purpose of the valuation, whether financial, legal, audit, or documentation, so the report is fit for purpose.",
   },
   {
     title: "We confirm the documents",
@@ -87,7 +119,8 @@ export default function PricingPage() {
           <h1>Transparent Valuation Pricing</h1>
           <p className="page-hero-sub">
             Choose the valuation that fits your purpose. Every report follows market evidence and
-            recognised standards — the prices below are starting points for our most requested services.
+            recognised standards. The prices below are starting points for each of our valuation
+            services.
           </p>
         </div>
       </section>
@@ -131,7 +164,7 @@ export default function PricingPage() {
             <p className="eyebrow">What to Expect</p>
             <h2>What happens after you reach out</h2>
             <p className="section-lead">
-              A clear, no-pressure process — you know the documents, the fee, and the timeline before any
+              A clear, no-pressure process. You know the documents, the fee, and the timeline before any
               work starts.
             </p>
           </header>

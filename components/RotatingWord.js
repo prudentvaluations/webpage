@@ -7,7 +7,7 @@ export default function RotatingWord({ items, interval = 2200 }) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    // Respect users who prefer reduced motion — keep the first item static.
+    // Respect users who prefer reduced motion: keep the first item static.
     const reduce =
       typeof window !== "undefined" &&
       window.matchMedia &&

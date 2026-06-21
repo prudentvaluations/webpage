@@ -24,7 +24,7 @@ const USE_CASES = [
 const VALUES = [
   {
     title: "Accuracy over assumptions",
-    body: "Every figure is grounded in real market evidence and verified documentation — never rough guesswork.",
+    body: "Every figure is grounded in real market evidence and verified documentation, never rough guesswork.",
   },
   {
     title: "Clarity in every report",
@@ -59,7 +59,7 @@ export default function AboutPage() {
             <p>
               We help individuals and businesses establish the fair value of their assets for financial,
               legal, and documentation purposes. Every report we prepare is grounded in genuine market
-              evidence and recognised valuation methods — and presented with the clarity that
+              evidence and recognised valuation methods, presented with the clarity that
               institutions, auditors, and authorities expect.
             </p>
             <p>
@@ -69,8 +69,8 @@ export default function AboutPage() {
             </p>
             <p className="prose-note">
               Prudent Valuations operates under <strong>The Experts &ndash; A House of Prudent (Pvt.)
-              Ltd.</strong>, a registered private limited company in Pakistan — giving our reports the
-              standing that banks, courts, and authorities expect.
+              Ltd.</strong>, a registered private limited company in Pakistan. This gives our reports
+              the standing that banks, courts, and authorities expect.
             </p>
           </div>
 

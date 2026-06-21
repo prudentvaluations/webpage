@@ -9,7 +9,6 @@ const LINKS = [
   { href: "/services", label: "Services" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
-  { href: "/verify", label: "Online Verification" },
   { href: "/#contact", label: "Contact" },
 ];
 
@@ -63,12 +62,17 @@ export default function Header() {
               </li>
             ))}
             <li>
-              <a
-                className="nav-cta"
-                href="mailto:support@prudentvaluations.com"
-                onClick={() => setOpen(false)}
-              >
-                Contact Us
+              <a className="nav-cta" href="/verify" onClick={() => setOpen(false)}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Verify Report
               </a>
             </li>
           </ul>

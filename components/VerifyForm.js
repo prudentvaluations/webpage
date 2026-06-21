@@ -193,7 +193,7 @@ export default function VerifyForm() {
                   <dd>
                     {result.ownerName}
                     {result.ownerGuardian ? (
-                      <span className="verify-guardian"> &mdash; w/o {result.ownerGuardian}</span>
+                      <span className="verify-guardian"> (w/o {result.ownerGuardian})</span>
                     ) : null}
                   </dd>
                 </div>
