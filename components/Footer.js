@@ -39,12 +39,8 @@ export default function Footer() {
           <h2 className="footer-heading">Contact</h2>
           <ul className="footer-contact-list">
             <li>
-              <span className="footer-label">Phone</span>
-              <a href="tel:+923214340094">+92 321 4340094</a>
-            </li>
-            <li>
               <span className="footer-label">Email</span>
-              <a href="mailto:prudentvaluations@gmail.com">prudentvaluations@gmail.com</a>
+              <a href="mailto:support@prudentvaluations.com">support@prudentvaluations.com</a>
             </li>
             <li>
               <span className="footer-label">Address</span>

@@ -65,7 +65,7 @@ export default function Header() {
             <li>
               <a
                 className="nav-cta"
-                href="mailto:prudentvaluations@gmail.com"
+                href="mailto:support@prudentvaluations.com"
                 onClick={() => setOpen(false)}
               >
                 Contact Us

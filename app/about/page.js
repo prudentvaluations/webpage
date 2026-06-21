@@ -132,8 +132,8 @@ export default function AboutPage() {
           <p className="contact-lead">
             Tell us about your asset and the purpose of the report, and we&apos;ll guide you from there.
           </p>
-          <a className="btn btn-primary btn-lg" href="mailto:prudentvaluations@gmail.com">
-            prudentvaluations@gmail.com
+          <a className="btn btn-primary btn-lg" href="mailto:support@prudentvaluations.com">
+            support@prudentvaluations.com
           </a>
         </div>
       </section>

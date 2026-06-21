@@ -110,7 +110,7 @@ export default function PricingPage() {
                 </ul>
                 <a
                   className={`btn ${pkg.popular ? "btn-primary" : "btn-ghost"} price-cta`}
-                  href="mailto:prudentvaluations@gmail.com"
+                  href="mailto:support@prudentvaluations.com"
                 >
                   Request This Valuation
                 </a>
@@ -120,7 +120,7 @@ export default function PricingPage() {
 
           <p className="price-note">
             Prices shown are starting points. Final pricing depends on the asset type, location,
-            documentation, and the purpose of the report. <a href="mailto:prudentvaluations@gmail.com">Contact us</a> for an exact quote.
+            documentation, and the purpose of the report. <a href="mailto:support@prudentvaluations.com">Contact us</a> for an exact quote.
           </p>
         </div>
       </section>
@@ -172,8 +172,8 @@ export default function PricingPage() {
             Share your asset details and the purpose of the report, and we&apos;ll recommend the right
             option and a precise quote.
           </p>
-          <a className="btn btn-primary btn-lg" href="mailto:prudentvaluations@gmail.com">
-            prudentvaluations@gmail.com
+          <a className="btn btn-primary btn-lg" href="mailto:support@prudentvaluations.com">
+            support@prudentvaluations.com
           </a>
         </div>
       </section>

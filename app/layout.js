@@ -90,8 +90,7 @@ const jsonLd = {
         height: 434,
       },
       image: `${siteUrl}/assets/og-image.png`,
-      email: "prudentvaluations@gmail.com",
-      telephone: "+92-321-4340094",
+      email: "support@prudentvaluations.com",
       address: {
         "@type": "PostalAddress",
         streetAddress: "2nd Floor, Liberty, Main Boulevard, Gulberg",
@@ -114,8 +113,7 @@ const jsonLd = {
       logo: `${siteUrl}/assets/logo.png`,
       description,
       url: siteUrl,
-      email: "prudentvaluations@gmail.com",
-      telephone: "+92-321-4340094",
+      email: "support@prudentvaluations.com",
       parentOrganization: { "@id": `${siteUrl}/#organization` },
       address: {
         "@type": "PostalAddress",

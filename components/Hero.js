@@ -29,7 +29,7 @@ export default function Hero() {
           immovable assets — prepared with accuracy and care.
         </p>
         <div className="hero-actions">
-          <a className="btn btn-primary" href="mailto:prudentvaluations@gmail.com">
+          <a className="btn btn-primary" href="mailto:support@prudentvaluations.com">
             Contact Us
           </a>
           <a className="btn btn-ghost" href="#services">

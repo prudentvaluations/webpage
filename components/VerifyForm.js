@@ -2,20 +2,11 @@
 
 import { useState } from "react";
 
-const STEPS = ["submitted", "under_review", "verified"];
-const STATUS_LABEL = {
-  draft: "Draft",
-  submitted: "Submitted",
-  under_review: "Under Review",
-  verified: "Verified",
-  rejected: "Rejected",
-  expired: "Expired",
-  cancelled: "Cancelled",
-};
+const SUPPORT_EMAIL = "support@prudentvaluations.com";
 
 function fmtPKR(n) {
   if (n == null) return null;
-  return "PKR " + Number(n).toLocaleString("en-PK", { maximumFractionDigits: 0 });
+  return "PKR " + Number(n).toLocaleString("en-PK", { maximumFractionDigits: 2 });
 }
 function fmtCAD(n) {
   if (n == null) return null;
@@ -23,8 +14,39 @@ function fmtCAD(n) {
 }
 function fmtDate(d) {
   if (!d) return null;
-  return new Date(d).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" });
+  return new Date(d).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
 }
+function formatCnic(s) {
+  const d = (s || "").replace(/\D/g, "").slice(0, 13);
+  const parts = [d.slice(0, 5)];
+  if (d.length > 5) parts.push(d.slice(5, 12));
+  if (d.length > 12) parts.push(d.slice(12, 13));
+  return parts.join("-");
+}
+
+// Which detail fields to show per valuation type, in order.
+const DETAIL_FIELDS = {
+  gold: [
+    ["purity_karat", "Purity", (v) => `${v}K`],
+    ["total_grams", "Total gold", (v, d) => `${v} g${d.total_tola ? ` (${d.total_tola} tola)` : ""}`],
+    ["rate_per_gram_pkr", "Rate per gram", (v) => fmtPKR(v)],
+  ],
+  vehicle: [
+    ["make_model", "Vehicle", (v) => v],
+    ["model_year", "Model year", (v) => v],
+    ["registration_no", "Registration No.", (v) => v],
+    ["engine_no", "Engine No.", (v) => v],
+    ["chassis_no", "Chassis No.", (v) => v],
+    ["transfer_date", "Transfer date", (v) => v],
+    ["odometer_km", "Odometer", (v) => `${Number(v).toLocaleString()} km`],
+  ],
+  property: [
+    ["description", "Property", (v) => v],
+    ["nature", "Nature", (v) => v],
+    ["land_area", "Land area", (v) => v],
+    ["value_per_marla_pkr", "Value per Marla", (v) => fmtPKR(v)],
+  ],
+};
 
 export default function VerifyForm() {
   const [reference, setReference] = useState("");
@@ -56,6 +78,14 @@ export default function VerifyForm() {
     }
   }
 
+  const status = result?.found ? result.status : null;
+  const detailRows =
+    result?.details && DETAIL_FIELDS[result.valuationType]
+      ? DETAIL_FIELDS[result.valuationType]
+          .filter(([k]) => result.details[k] != null && result.details[k] !== "")
+          .map(([k, label, fmt]) => [label, fmt(result.details[k], result.details)])
+      : [];
+
   return (
     <div className="verify">
       <form className="verify-form" onSubmit={onSubmit}>
@@ -64,7 +94,7 @@ export default function VerifyForm() {
           <input
             id="reference"
             type="text"
-            placeholder="e.g. TE/EVL/312/2026"
+            placeholder="e.g. TE/EVL/123/2026"
             value={reference}
             onChange={(e) => setReference(e.target.value)}
             autoComplete="off"
@@ -77,10 +107,11 @@ export default function VerifyForm() {
             id="cnic"
             type="text"
             inputMode="numeric"
-            placeholder="e.g. 35202-5782390-2"
+            placeholder="35201-4324549-9"
             value={cnic}
-            onChange={(e) => setCnic(e.target.value)}
+            onChange={(e) => setCnic(formatCnic(e.target.value))}
             autoComplete="off"
+            maxLength={15}
             required
           />
         </div>
@@ -88,7 +119,7 @@ export default function VerifyForm() {
           {loading ? "Checking…" : "Verify Report"}
         </button>
         <p className="verify-hint">
-          Enter the reference exactly as printed on the report, plus the CNIC of the asset owner.
+          Enter the reference exactly as printed on the report, plus the owner&apos;s 13-digit CNIC.
         </p>
       </form>
 
@@ -96,48 +127,84 @@ export default function VerifyForm() {
         <div className="verify-result" aria-live="polite">
           {error && !result?.found && <p className="verify-error">{error}</p>}
 
+          {/* No match */}
           {result && !result.found && !error && (
             <div className="verify-card verify-card--notfound">
-              <span className="verify-badge verify-badge--gray">Not found</span>
+              <span className="verify-badge verify-badge--gray">No report found</span>
               <h3>No matching report</h3>
               <p>
-                We couldn&apos;t find a report matching that reference and CNIC. Check both values and
-                try again, or contact us if you believe this is an error.
+                We couldn&apos;t find a report matching that reference and CNIC. Please check both values
+                and try again, or email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> for help.
               </p>
             </div>
           )}
 
+          {/* Found */}
           {result && result.found && (
             <div
-              className={`verify-card ${
-                result.verified ? "verify-card--ok" : "verify-card--pending"
-              }`}
+              className={
+                "verify-card " +
+                (status === "verified"
+                  ? "verify-card--ok"
+                  : status === "rejected"
+                  ? "verify-card--rejected"
+                  : "verify-card--pending")
+              }
             >
               <span
-                className={`verify-badge ${
-                  result.verified ? "verify-badge--ok" : "verify-badge--pending"
-                }`}
+                className={
+                  "verify-badge " +
+                  (status === "verified"
+                    ? "verify-badge--ok"
+                    : status === "rejected"
+                    ? "verify-badge--rejected"
+                    : "verify-badge--pending")
+                }
               >
-                {result.verified ? "✓ Verified" : STATUS_LABEL[result.statusCode] || result.status}
+                {status === "verified"
+                  ? "✓ Verified"
+                  : status === "rejected"
+                  ? "Rejected"
+                  : "Under Review"}
               </span>
 
-              <h3>{result.type || "Valuation Report"}</h3>
+              <h3>{result.type}</h3>
+
+              {status === "under_review" && (
+                <p className="verify-status-msg">
+                  Your document has been received and is currently under review. Please check back
+                  shortly.
+                </p>
+              )}
+              {status === "rejected" && (
+                <p className="verify-status-msg">
+                  This report could not be verified. Please email{" "}
+                  <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> for details.
+                </p>
+              )}
+
               <dl className="verify-details">
                 <div>
                   <dt>Reference</dt>
                   <dd>{result.reference}</dd>
                 </div>
-                {result.ownerNameMasked && (
+                <div>
+                  <dt>Owner</dt>
+                  <dd>
+                    {result.ownerName}
+                    {result.ownerGuardian ? (
+                      <span className="verify-guardian"> &mdash; w/o {result.ownerGuardian}</span>
+                    ) : null}
+                  </dd>
+                </div>
+                {result.reportDate && (
                   <div>
-                    <dt>Owner</dt>
-                    <dd>{result.ownerNameMasked}</dd>
+                    <dt>Report date</dt>
+                    <dd>{fmtDate(result.reportDate)}</dd>
                   </div>
                 )}
-                <div>
-                  <dt>Status</dt>
-                  <dd>{result.status}</dd>
-                </div>
-                {result.value && (
+
+                {status === "verified" && result.value && (
                   <>
                     <div>
                       <dt>Assessed value</dt>
@@ -149,41 +216,19 @@ export default function VerifyForm() {
                         <dd>{fmtCAD(result.value.cad)}</dd>
                       </div>
                     )}
-                    {result.value.valuationDate && (
-                      <div>
-                        <dt>Valuation date</dt>
-                        <dd>{fmtDate(result.value.valuationDate)}</dd>
+                    {detailRows.map(([label, val]) => (
+                      <div key={label}>
+                        <dt>{label}</dt>
+                        <dd>{val}</dd>
                       </div>
-                    )}
-                    {result.value.validUntil && (
-                      <div>
-                        <dt>Valid until</dt>
-                        <dd>{fmtDate(result.value.validUntil)}</dd>
-                      </div>
-                    )}
+                    ))}
                   </>
                 )}
               </dl>
 
-              {/* Tracking timeline for non-rejected/expired states */}
-              {!["rejected", "expired", "cancelled"].includes(result.statusCode) && (
-                <ol className="verify-timeline" aria-label="Status progress">
-                  {STEPS.map((s) => {
-                    const reached =
-                      STEPS.indexOf(result.statusCode) >= STEPS.indexOf(s) || result.verified;
-                    return (
-                      <li key={s} className={reached ? "is-done" : ""}>
-                        <span className="verify-timeline__dot" />
-                        {STATUS_LABEL[s]}
-                      </li>
-                    );
-                  })}
-                </ol>
-              )}
-
               <p className="verify-note">
-                This confirms the report&apos;s status in our records. For the full document, contact
-                Prudent Valuations.
+                To obtain the complete <strong>signed and stamped</strong> valuation report, contact{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
               </p>
             </div>
           )}

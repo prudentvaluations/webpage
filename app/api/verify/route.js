@@ -6,19 +6,6 @@ export const dynamic = "force-dynamic";
 
 const onlyDigits = (s) => (s || "").replace(/\D/g, "");
 
-// "Zoya Tahir" -> "Z*** T****" (recognisable but privacy-preserving)
-function maskName(name) {
-  if (!name) return null;
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((w) => w[0] + "*".repeat(Math.max(1, w.length - 1)))
-    .join(" ");
-}
-
-// PostgREST one-to-one embeds usually return an object, but tolerate arrays.
-const one = (v) => (Array.isArray(v) ? v[0] : v) || null;
-
 export async function POST(req) {
   let body;
   try {
@@ -30,9 +17,9 @@ export async function POST(req) {
   const reference = (body.reference || "").trim();
   const cnicInput = onlyDigits(body.cnic);
 
-  if (!reference || cnicInput.length < 5) {
+  if (!reference || cnicInput.length !== 13) {
     return NextResponse.json(
-      { found: false, error: "Enter a valid report reference and CNIC." },
+      { found: false, error: "Enter the report reference and the 13-digit CNIC." },
       { status: 200 }
     );
   }
@@ -41,15 +28,11 @@ export async function POST(req) {
   try {
     const supabase = getAdminClient();
     ({ data, error } = await supabase
-      .from("valuation_requests")
+      .from("valuation_reports")
       .select(
-        `request_reference,
-         status:verification_statuses(code,name),
-         type:valuation_types(code,name),
-         result:valuation_results(market_value_pkr, market_value_cad, valuation_date, valid_until),
-         owner:users(profile:user_profiles(first_name,last_name,cnic))`
+        "reference, valuation_type, status, owner_name, owner_guardian, cnic, report_date, market_value_pkr, market_value_cad, exchange_rate, valid_until, details"
       )
-      .eq("request_reference", reference)
+      .eq("reference", reference)
       .maybeSingle());
   } catch (e) {
     console.error("verify config error:", e.message);
@@ -60,40 +43,37 @@ export async function POST(req) {
     console.error("verify query error:", error.message);
     return NextResponse.json({ found: false, error: "Lookup failed." }, { status: 500 });
   }
-  if (!data) {
+
+  // Second factor: CNIC must match. If not, respond exactly like "not found"
+  // so the reference alone reveals nothing.
+  if (!data || onlyDigits(data.cnic) !== cnicInput) {
     return NextResponse.json({ found: false }, { status: 200 });
   }
 
-  // Second factor: CNIC must match the record's profile. If it doesn't,
-  // respond exactly like "not found" so the reference alone reveals nothing.
-  const profile = one(one(data.owner)?.profile);
-  const dbCnic = onlyDigits(profile?.cnic);
-  if (!dbCnic || dbCnic !== cnicInput) {
-    return NextResponse.json({ found: false }, { status: 200 });
-  }
-
-  const status = one(data.status);
-  const type = one(data.type);
-  const result = one(data.result);
-  const verified = status?.code === "verified";
-  const ownerName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ");
+  const TYPE_LABEL = {
+    gold: "Gold Valuation",
+    vehicle: "Vehicle Valuation",
+    property: "Property Valuation",
+  };
 
   return NextResponse.json({
     found: true,
-    verified,
-    reference: data.request_reference,
-    statusCode: status?.code || null,
-    status: status?.name || null,
-    type: type?.name || null,
-    ownerNameMasked: maskName(ownerName),
+    status: data.status, // under_review | verified | rejected
+    reference: data.reference,
+    type: TYPE_LABEL[data.valuation_type] || "Valuation Report",
+    valuationType: data.valuation_type,
+    ownerName: data.owner_name,
+    ownerGuardian: data.owner_guardian,
+    reportDate: data.report_date,
+    validUntil: data.valid_until,
     value:
-      verified && result
+      data.status === "verified"
         ? {
-            pkr: result.market_value_pkr,
-            cad: result.market_value_cad,
-            valuationDate: result.valuation_date,
-            validUntil: result.valid_until,
+            pkr: data.market_value_pkr,
+            cad: data.market_value_cad,
+            exchangeRate: data.exchange_rate,
           }
         : null,
+    details: data.status === "verified" ? data.details || {} : null,
   });
 }

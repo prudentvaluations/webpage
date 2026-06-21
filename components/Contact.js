@@ -8,15 +8,11 @@ export default function Contact() {
           Share your asset details and the purpose of the report. We review the requirement, confirm the
           documents needed, and respond with a clear fee and timeline — usually within one working day.
         </p>
-        <a className="btn btn-primary btn-lg" href="mailto:prudentvaluations@gmail.com">
-          prudentvaluations@gmail.com
+        <a className="btn btn-primary btn-lg" href="mailto:support@prudentvaluations.com">
+          support@prudentvaluations.com
         </a>
 
         <ul className="contact-meta" role="list">
-          <li>
-            <span className="contact-meta__label">Phone</span>
-            <a href="tel:+923214340094">+92 321 4340094</a>
-          </li>
           <li>
             <span className="contact-meta__label">Office Hours</span>
             <span>Mon&ndash;Fri &middot; 10 AM &ndash; 6 PM</span>

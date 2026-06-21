@@ -895,7 +895,11 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .verify-card--ok { border-color: #b6e0c2; background: linear-gradient(180deg, #f3fbf5, #fff); }
 .verify-card--pending { border-color: #ffe0b8; background: linear-gradient(180deg, #fff8ef, #fff); }
+.verify-card--rejected { border-color: #f3c2c2; background: linear-gradient(180deg, #fdf3f3, #fff); }
+.verify-card--notfound { background: var(--bg-soft); }
 .verify-card h3 { margin: 0.7rem 0 1rem; font-size: 1.3rem; }
+.verify-status-msg { color: var(--muted); font-size: 0.97rem; margin: 0 0 1.1rem; }
+.verify-guardian { color: var(--muted); font-weight: 400; }
 .verify-badge {
   display: inline-block;
   font-size: 0.78rem;
@@ -906,6 +910,7 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .verify-badge--ok { background: #1d9e54; color: #fff; }
 .verify-badge--pending { background: #ea6802; color: #fff; }
+.verify-badge--rejected { background: #c0392b; color: #fff; }
 .verify-badge--gray { background: #e6e6ee; color: var(--muted); }
 
 .verify-details {
