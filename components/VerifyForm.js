@@ -94,7 +94,7 @@ export default function VerifyForm() {
           <input
             id="reference"
             type="text"
-            placeholder="e.g. TE/EVL/123/2026"
+            placeholder="PV/EVL/XXX/XXXX"
             value={reference}
             onChange={(e) => setReference(e.target.value)}
             autoComplete="off"
@@ -107,7 +107,7 @@ export default function VerifyForm() {
             id="cnic"
             type="text"
             inputMode="numeric"
-            placeholder="35201-4324549-9"
+            placeholder="XXXXX-XXXXXXX-X"
             value={cnic}
             onChange={(e) => setCnic(formatCnic(e.target.value))}
             autoComplete="off"
