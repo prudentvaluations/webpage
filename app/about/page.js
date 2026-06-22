@@ -1,7 +1,7 @@
 export const metadata = {
   title: "About | Prudent Valuations",
   description:
-    "Prudent Valuations is a professional valuation firm producing clear, credible, market-based reports for property, gold, vehicles, and movable & immovable assets.",
+    "Prudent Valuations is a professional valuation firm producing clear, credible, market-based reports for property, gold, vehicles, and movable assets.",
   alternates: { canonical: "/about" },
 };
 
@@ -46,8 +46,8 @@ export default function AboutPage() {
           <h1>Clear, Credible, Market-Based Valuations</h1>
           <p className="page-hero-sub">
             Prudent Valuations is a professional valuation firm dedicated to producing precise,
-            well-documented reports for property, gold, vehicles, and a broad range of movable and
-            immovable assets.
+            well-documented reports for property, gold, vehicles, and a broad range of movable
+            assets.
           </p>
         </div>
       </section>

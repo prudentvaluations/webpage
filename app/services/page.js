@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Services | Prudent Valuations",
   description:
-    "Professional valuation services in Pakistan: property, gold, vehicle, movable, immovable, and general asset valuation reports prepared to recognised standards.",
+    "Professional valuation services in Pakistan: property, gold, vehicle, movable and general asset valuation reports prepared to recognised standards.",
   alternates: { canonical: "/services" },
 };
 
@@ -53,18 +53,6 @@ const SERVICES = [
       "Replacement and fair-market basis",
     ],
     usedFor: "Visa net-worth files, audits, financing, insurance",
-  },
-  {
-    icon: "\u{1F3E2}",
-    title: "Immovable Asset Valuation",
-    overview:
-      "Assessment of land, buildings, and fixed assets, prepared to recognised valuation standards with clear, defensible reasoning.",
-    covers: [
-      "Land and built structures",
-      "Fixed installations and improvements",
-      "Standards-based fair value",
-    ],
-    usedFor: "Visa & immigration, financial statements, legal, asset verification",
   },
   {
     icon: "\u{1F4CB}",

@@ -1,7 +1,7 @@
 export const metadata = {
   title: "Pricing | Prudent Valuations",
   description:
-    "Transparent starting prices for property, gold, vehicle, movable, immovable, and net-worth valuation reports. Final pricing depends on the asset, location, and purpose of the report.",
+    "Transparent starting prices for property, gold, vehicle, movable and net-worth valuation reports. Final pricing depends on the asset, location, and purpose of the report.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -49,17 +49,6 @@ const PACKAGES = [
       "Plant, machinery & equipment",
       "Inventory and stock-in-trade",
       "Replacement and fair-market basis",
-    ],
-  },
-  {
-    name: "Immovable Asset Valuation",
-    price: "Rs. 4,000",
-    unit: "starting from",
-    popular: false,
-    features: [
-      "Land, buildings & fixed assets",
-      "Standards-based fair value",
-      "Suitable for statements & legal use",
     ],
   },
   {

@@ -5,7 +5,6 @@ const SPECIALITIES = [
   "Gold & Jewellery",
   "Vehicles",
   "Movable Assets",
-  "Immovable Assets",
   "Net-Worth Reports",
 ];
 
@@ -25,8 +24,8 @@ export default function Hero() {
           <RotatingWord items={SPECIALITIES} />
         </p>
         <p className="hero-sub">
-          Clear, market-based valuation reports for property, gold, vehicles, and movable &amp;
-          immovable assets, prepared with accuracy and care.
+          Clear, market-based valuation reports for property, gold, vehicles, and a range of movable
+          assets, prepared with accuracy and care.
         </p>
         <div className="hero-actions">
           <a className="btn btn-primary" href="mailto:support@prudentvaluations.com">

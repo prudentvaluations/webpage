@@ -3,7 +3,7 @@ export default function manifest() {
     name: "Prudent Valuations",
     short_name: "Prudent Valuations",
     description:
-      "Professional valuation services for property, gold, vehicles, and movable & immovable assets.",
+      "Professional valuation services for property, gold, vehicles, and movable assets.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

@@ -20,11 +20,6 @@ const SERVICES = [
     body: "Valuation of equipment, machinery, stock, and other movable assets for reporting and decision-making.",
   },
   {
-    icon: "\u{1F3E2}",
-    title: "Immovable Asset Valuation",
-    body: "Assessment of land, buildings, and fixed assets prepared to recognised valuation standards.",
-  },
-  {
     icon: "\u{1F4CB}",
     title: "General Asset Valuation Reports",
     body: "Comprehensive net-worth and general asset reports for financial, legal, and documentation requirements.",

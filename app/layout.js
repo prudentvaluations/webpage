@@ -30,7 +30,7 @@ const playfair = Playfair_Display({
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://prudent-valuations.vercel.app";
 const title = "Prudent Valuations | Property, Gold, Vehicle & Asset Valuation Services";
 const description =
-  "Professional valuation services for property, gold, vehicles, movable assets, immovable assets, and general asset reporting.";
+  "Professional valuation services for property, gold, vehicles, movable assets, and general asset reporting.";
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
@@ -57,7 +57,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Prudent Valuations",
     description:
-      "Professional valuation services for property, gold, vehicles, and movable & immovable assets.",
+      "Professional valuation services for property, gold, vehicles, and movable assets.",
     images: ["/assets/og-image.png"],
   },
   icons: {
@@ -133,8 +133,8 @@ const jsonLd = {
         "Gold Valuation",
         "Vehicle Valuation",
         "Movable Asset Valuation",
-        "Immovable Asset Valuation",
         "General Asset Valuation Reports",
+        "Net Worth Statement",
       ],
     },
   ],
