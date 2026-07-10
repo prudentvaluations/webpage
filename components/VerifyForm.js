@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { wealthTotals, wealthTitle } from "@/lib/wealth";
 
 const SUPPORT_EMAIL = "support@prudentvaluations.com";
 
@@ -14,7 +15,11 @@ function fmtCAD(n) {
 }
 function fmtDate(d) {
   if (!d) return null;
-  return new Date(d).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
+  // Read date-only values (YYYY-MM-DD) as a local calendar date, not UTC
+  // midnight, so a timezone behind UTC doesn't show the previous day.
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d));
+  const dt = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(d);
+  return dt.toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
 }
 function formatCnic(s) {
   const d = (s || "").replace(/\D/g, "").slice(0, 13);
@@ -79,6 +84,9 @@ export default function VerifyForm() {
   }
 
   const status = result?.found ? result.status : null;
+  const isWealth = result?.valuationType === "wealth";
+  const wt = isWealth && result?.details ? wealthTotals(result.details) : null;
+  const cardTitle = isWealth && wt ? wealthTitle(wt.hasSupport) : result?.type;
   const detailRows =
     result?.details && DETAIL_FIELDS[result.valuationType]
       ? DETAIL_FIELDS[result.valuationType]
@@ -168,7 +176,7 @@ export default function VerifyForm() {
                   : "Under Review"}
               </span>
 
-              <h3>{result.type}</h3>
+              <h3>{cardTitle}</h3>
 
               {status === "under_review" && (
                 <p className="verify-status-msg">
@@ -206,22 +214,47 @@ export default function VerifyForm() {
 
                 {status === "verified" && result.value && (
                   <>
-                    <div>
-                      <dt>Assessed value</dt>
-                      <dd>{fmtPKR(result.value.pkr)}</dd>
-                    </div>
+                    {isWealth ? (
+                      wt?.hasSupport ? (
+                        <>
+                          <div>
+                            <dt>Personal &amp; jointly held net worth</dt>
+                            <dd>{fmtPKR(wt.personalNet)}</dd>
+                          </div>
+                          <div>
+                            <dt>Spousal financial support</dt>
+                            <dd>{fmtPKR(wt.supportTotal)}</dd>
+                          </div>
+                          <div>
+                            <dt>Combined accessible resources</dt>
+                            <dd>{fmtPKR(wt.combined)}</dd>
+                          </div>
+                        </>
+                      ) : (
+                        <div>
+                          <dt>Net worth</dt>
+                          <dd>{fmtPKR(wt?.hasItems ? wt.combined : result.value.pkr)}</dd>
+                        </div>
+                      )
+                    ) : (
+                      <div>
+                        <dt>Assessed value</dt>
+                        <dd>{fmtPKR(result.value.pkr)}</dd>
+                      </div>
+                    )}
                     {result.value.cad != null && (
                       <div>
                         <dt>Equivalent</dt>
                         <dd>{fmtCAD(result.value.cad)}</dd>
                       </div>
                     )}
-                    {detailRows.map(([label, val]) => (
-                      <div key={label}>
-                        <dt>{label}</dt>
-                        <dd>{val}</dd>
-                      </div>
-                    ))}
+                    {!isWealth &&
+                      detailRows.map(([label, val]) => (
+                        <div key={label}>
+                          <dt>{label}</dt>
+                          <dd>{val}</dd>
+                        </div>
+                      ))}
                   </>
                 )}
               </dl>

@@ -6,6 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const FIELDS = [
+  "reference",
   "valuation_type",
   "status",
   "owner_name",

@@ -1,4 +1,5 @@
 import { getAdminClient } from "@/lib/supabaseAdmin";
+import { wealthTotals, wealthTitle } from "@/lib/wealth";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -7,11 +8,24 @@ export const metadata = {
 };
 
 const SUPPORT_EMAIL = "support@prudentvaluations.com";
-const TYPE_LABEL = { gold: "Gold Valuation", vehicle: "Vehicle Valuation", property: "Property Valuation" };
+const TYPE_LABEL = {
+  gold: "Gold Valuation",
+  vehicle: "Vehicle Valuation",
+  property: "Property Valuation",
+  movable: "Movable Assets Valuation",
+  wealth: "Statement of Net Worth",
+};
 
 const fmtPKR = (n) => (n == null ? null : "PKR " + Number(n).toLocaleString("en-PK", { maximumFractionDigits: 2 }));
 const fmtCAD = (n) => (n == null ? null : "CAD " + Number(n).toLocaleString("en-CA", { maximumFractionDigits: 2 }));
-const fmtDate = (d) => (!d ? null : new Date(d).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" }));
+// Date-only values (YYYY-MM-DD) are read as a local calendar date, not UTC
+// midnight, so a timezone behind UTC does not render the previous day.
+const fmtDate = (d) => {
+  if (!d) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d));
+  const dt = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(d);
+  return dt.toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
+};
 
 const DETAIL_FIELDS = {
   gold: [
@@ -55,6 +69,9 @@ export default async function TokenVerifyPage({ params }) {
   const status = report?.status;
   const verified = status === "verified";
   const details = report?.details || {};
+  const isWealth = report?.valuation_type === "wealth";
+  const wt = isWealth ? wealthTotals(details) : null;
+  const cardTitle = isWealth ? wealthTitle(wt.hasSupport) : TYPE_LABEL[report?.valuation_type] || "Valuation Report";
   const detailRows =
     verified && DETAIL_FIELDS[report.valuation_type]
       ? DETAIL_FIELDS[report.valuation_type]
@@ -101,7 +118,7 @@ export default async function TokenVerifyPage({ params }) {
               >
                 {verified ? "✓ Verified" : status === "rejected" ? "Rejected" : "Under Review"}
               </span>
-              <h3>{TYPE_LABEL[report.valuation_type] || "Valuation Report"}</h3>
+              <h3>{cardTitle}</h3>
 
               {status === "under_review" && (
                 <p className="verify-status-msg">
@@ -133,7 +150,39 @@ export default async function TokenVerifyPage({ params }) {
                     <dd>{fmtDate(report.report_date)}</dd>
                   </div>
                 )}
-                {verified && (
+                {verified && isWealth && (
+                  <>
+                    {wt.hasSupport ? (
+                      <>
+                        <div>
+                          <dt>Personal &amp; jointly held net worth</dt>
+                          <dd>{fmtPKR(wt.personalNet)}</dd>
+                        </div>
+                        <div>
+                          <dt>Spousal financial support</dt>
+                          <dd>{fmtPKR(wt.supportTotal)}</dd>
+                        </div>
+                        <div>
+                          <dt>Combined accessible resources</dt>
+                          <dd>{fmtPKR(wt.combined)}</dd>
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <dt>Net worth</dt>
+                        <dd>{fmtPKR(wt.hasItems ? wt.combined : report.market_value_pkr)}</dd>
+                      </div>
+                    )}
+                    {report.market_value_cad != null && (
+                      <div>
+                        <dt>Equivalent</dt>
+                        <dd>{fmtCAD(report.market_value_cad)}</dd>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {verified && !isWealth && (
                   <>
                     {report.market_value_pkr != null && (
                       <div>

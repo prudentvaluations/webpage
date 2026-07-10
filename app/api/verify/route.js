@@ -54,6 +54,8 @@ export async function POST(req) {
     gold: "Gold Valuation",
     vehicle: "Vehicle Valuation",
     property: "Property Valuation",
+    movable: "Movable Assets Valuation",
+    wealth: "Statement of Net Worth",
   };
 
   return NextResponse.json({
