@@ -51,7 +51,12 @@ function subjectFor(r) {
   if (r.valuation_type === "gold") return `Valuation of Gold Jewellery (${r.details?.purity_karat || 22} Karat)`;
   if (r.valuation_type === "vehicle") return "Valuation of Vehicle (Motor Car)";
   if (r.valuation_type === "movable") return "Valuation of Movable Assets";
-  if (r.valuation_type === "wealth") return "Statement of Net Worth";
+  if (r.valuation_type === "wealth") {
+    const hasSupport = (r.details?.items || []).some((i) => i.section === "support");
+    return hasSupport
+      ? "Statement of Personal Net Worth and Spousal Financial Support"
+      : "Statement of Net Worth";
+  }
   return "Valuation of Property";
 }
 
@@ -114,17 +119,30 @@ function WealthBody({ report }) {
   const d = report.details || {};
   const items = Array.isArray(d.items) ? d.items : [];
   const liquid = items.filter((i) => i.section === "liquid");
-  const assets = items.filter((i) => i.section !== "liquid");
+  const support = items.filter((i) => i.section === "support");
+  const assets = items.filter((i) => i.section !== "liquid" && i.section !== "support");
   const sum = (arr) => arr.reduce((t, i) => t + (Number(i.value_pkr) || 0), 0);
   const liquidTotal = sum(liquid);
+  const supportTotal = sum(support);
   const assetTotal = sum(assets);
-  const grand = liquidTotal + assetTotal;
+  // Funds legally owned by the applicant (personal + joint) are kept distinct
+  // from spouse-owned funds, which are shown only as committed support.
+  const personalNet = liquidTotal + assetTotal;
+  const combined = personalNet + supportTotal;
+  const hasSupport = support.length > 0;
   const cc = report.currency_code || "USD";
   const rate = Number(report.exchange_rate) || null;
-  const secTotal = rate ? grand / rate : report.market_value_cad;
+  const secTotal = rate ? combined / rate : report.market_value_cad;
+
+  const spouseName = report.owner_guardian || ""; // named spouse, when provided
+  // Owner "wife of / daughter of" ⇒ spouse is male (his); "husband of" ⇒ female (her).
+  const spousePossessive = report.guardian_relation === "husband" ? "her" : "his";
+  const letterKind = d.support_notarised ? "signed and notarised" : "signed";
+  const letterDate = d.support_letter_date ? ` dated ${fdate(d.support_letter_date)}` : "";
 
   let sr = 0;
-  const groupRows = (label, arr, subtotal) => (
+  const totalOf = { liquid: liquidTotal, support: supportTotal, asset: assetTotal };
+  const groupRows = (label, arr, subtotal, key) => (
     <>
       <tr className="rep-w-group">
         <td colSpan={4}>{label}</td>
@@ -145,33 +163,46 @@ function WealthBody({ report }) {
       ))}
       <tr className="rep-w-subtotal">
         <td colSpan={3}>{subtotal}</td>
-        <td className="rep-w-val">{pkr(arr === liquid ? liquidTotal : assetTotal)}</td>
+        <td className="rep-w-val">{pkr(totalOf[key])}</td>
       </tr>
     </>
   );
 
   return (
     <>
-      <p className="rep-w-cert">
-        This is to certify that, based on the documents produced and verified to our satisfaction, the
-        net worth of <strong>{ownerLine(report)}</strong> is <strong>{pkr(grand)}</strong>
-        {secTotal != null ? <> (equivalent <strong>{sec(secTotal, cc)}</strong>)</> : null} as of{" "}
-        {fdate(report.report_date)}.
-      </p>
+      {hasSupport ? (
+        <p className="rep-w-cert">
+          This is to certify that, on the basis of the documents produced and reviewed, the personal and jointly
+          held net worth of <strong>{ownerLine(report)}</strong> is <strong>{pkr(personalNet)}</strong> as of {fdate(report.report_date)}.
+          In addition, the applicant&rsquo;s spouse{spouseName ? <>, <strong>{spouseName}</strong>,</> : ""} has confirmed through a {letterKind} financial
+          support letter{letterDate} that a further <strong>{pkr(supportTotal)}</strong> held in {spousePossessive} individual account is available to
+          support the applicant. Taking this support into account, the total financial resources available for this
+          application amount to <strong>{pkr(combined)}</strong>{secTotal != null ? <> (equivalent <strong>{sec(secTotal, cc)}</strong>)</> : null}.
+        </p>
+      ) : (
+        <p className="rep-w-cert">
+          This is to certify that, based on the documents produced and verified to our satisfaction, the
+          net worth of <strong>{ownerLine(report)}</strong> is <strong>{pkr(combined)}</strong>
+          {secTotal != null ? <> (equivalent <strong>{sec(secTotal, cc)}</strong>)</> : null} as of{" "}
+          {fdate(report.report_date)}.
+        </p>
+      )}
 
       <div className="rep-w-summary">
-        <div>
-          <span>Liquid funds (readily available)</span>
-          <strong>{pkr(liquidTotal)}</strong>
-        </div>
-        <div>
-          <span>Appraised assets (market value)</span>
-          <strong>{pkr(assetTotal)}</strong>
-        </div>
-        <div className="rep-w-summary-total">
-          <span>Total net worth</span>
-          <strong>{pkr(grand)}</strong>
-        </div>
+        {hasSupport ? (
+          <>
+            <div><span>Applicant&rsquo;s readily available funds</span><strong>{pkr(liquidTotal)}</strong></div>
+            <div><span>Spouse-supported funds</span><strong>{pkr(supportTotal)}</strong></div>
+            <div><span>Applicant&rsquo;s appraised assets</span><strong>{pkr(assetTotal)}</strong></div>
+            <div className="rep-w-summary-total"><span>Combined accessible resources</span><strong>{pkr(combined)}</strong></div>
+          </>
+        ) : (
+          <>
+            <div><span>Liquid funds (readily available)</span><strong>{pkr(liquidTotal)}</strong></div>
+            <div><span>Appraised assets (market value)</span><strong>{pkr(assetTotal)}</strong></div>
+            <div className="rep-w-summary-total"><span>Total net worth</span><strong>{pkr(combined)}</strong></div>
+          </>
+        )}
       </div>
 
       <table className="rep-table rep-w-table">
@@ -184,25 +215,26 @@ function WealthBody({ report }) {
           </tr>
         </thead>
         <tbody>
-          {groupRows("A. Liquid Funds — Cash & Bank Balances", liquid, "Total Liquid Funds")}
-          {groupRows("B. Appraised Assets — Estimated Market Value", assets, "Total Appraised Assets")}
+          {groupRows("A. Liquid Funds (Cash & Bank Balances, applicant / joint)", liquid, "Total Liquid Funds", "liquid")}
+          {groupRows("B. Appraised Assets (Estimated Market Value)", assets, "Total Appraised Assets", "asset")}
+          {hasSupport && (
+            <tr className="rep-w-personal">
+              <td colSpan={3}>APPLICANT&rsquo;S PERSONAL &amp; JOINTLY HELD NET WORTH (A + B)</td>
+              <td className="rep-w-val">{pkr(personalNet)}</td>
+            </tr>
+          )}
+          {hasSupport && groupRows("C. Spousal Financial Support (Spouse-Owned Funds)", support, "Total Spousal Support", "support")}
           <tr className="rep-w-grand">
-            <td colSpan={3}>TOTAL NET WORTH</td>
-            <td className="rep-w-val">{pkr(grand)}</td>
+            <td colSpan={3}>{hasSupport ? "COMBINED ACCESSIBLE FINANCIAL RESOURCES (A + B + C)" : "TOTAL NET WORTH"}</td>
+            <td className="rep-w-val">{pkr(combined)}</td>
           </tr>
         </tbody>
       </table>
       {rate && <p className="rep-rate">Exchange Rate (Forex.pk) Used: 1 {cc} = {rate} PKR</p>}
 
-      {d.support_note && (
-        <p className="rep-w-note">
-          <strong>Financial support:</strong> {d.support_note}
-        </p>
-      )}
       <p className="rep-w-note">
-        <strong>Note for the reviewing officer:</strong> Liquid funds (cash and bank balances) are
-        readily available for settlement, whereas appraised assets reflect estimated market value and are
-        not immediately liquid. Ownership of each item is stated above.
+        <strong>Note for the reviewing officer:</strong> Liquid funds are readily available, while appraised assets reflect
+        estimated market value and may not be immediately realisable.{hasSupport ? ` The funds shown as spousal support are legally owned by the applicant's spouse and are provided as committed financial support for the applicant, evidenced by a ${letterKind} letter${letterDate}; they are not assets owned by the applicant.` : ""} Ownership of each item is listed in the table above.
       </p>
     </>
   );

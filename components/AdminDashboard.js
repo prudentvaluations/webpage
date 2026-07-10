@@ -37,9 +37,9 @@ function describeReport(r) {
   if (r.valuation_type === "vehicle")
     return `${d.make_model || "Vehicle"}${d.model_year ? ` (${d.model_year})` : ""}${d.registration_no ? `, Reg ${d.registration_no}` : ""}${ref}`;
   if (r.valuation_type === "property")
-    return `${d.nature ? d.nature + " — " : ""}${d.description || "Property"}${ref}`;
+    return `${d.nature ? d.nature + ": " : ""}${d.description || "Property"}${ref}`;
   if (r.valuation_type === "movable")
-    return `${d.asset_type ? d.asset_type + " — " : ""}${d.description || "Movable asset"}${ref}`;
+    return `${d.asset_type ? d.asset_type + ": " : ""}${d.description || "Movable asset"}${ref}`;
   return `${r.valuation_type}${ref}`;
 }
 
@@ -201,7 +201,6 @@ export default function AdminDashboard({ siteUrl }) {
   const addItem = (section) => setItems([...items, { section, description: "", ownership: "", value_pkr: "" }]);
   const updItem = (i, k, v) => setItems(items.map((it, idx) => (idx === i ? { ...it, [k]: v } : it)));
   const delItem = (i) => setItems(items.filter((_, idx) => idx !== i));
-  const setSupport = (v) => setForm((f) => ({ ...f, details: { ...f.details, support_note: v } }));
   const itemsTotal = items.reduce((t, i) => t + (Number(i.value_pkr) || 0), 0);
 
   // Equivalent value = market value (PKR) ÷ exchange rate, kept in sync whenever
@@ -336,12 +335,16 @@ export default function AdminDashboard({ siteUrl }) {
       const cleaned = items
         .filter((i) => i.description || i.value_pkr)
         .map((i) => ({
-          section: i.section === "liquid" ? "liquid" : "asset",
+          section: i.section === "liquid" ? "liquid" : i.section === "support" ? "support" : "asset",
           description: (i.description || "").trim(),
           ownership: (i.ownership || "").trim() || null,
           value_pkr: i.value_pkr === "" ? null : Number(i.value_pkr),
         }));
-      details = { items: cleaned, support_note: (form.details.support_note || "").trim() || null };
+      details = {
+        items: cleaned,
+        support_letter_date: form.details.support_letter_date || null,
+        support_notarised: !!form.details.support_notarised,
+      };
       const total = cleaned.reduce((t, i) => t + (i.value_pkr || 0), 0);
       mvp = total || mvp;
       if (form.exchange_rate) mvc = mvp / Number(form.exchange_rate);
@@ -638,6 +641,7 @@ export default function AdminDashboard({ siteUrl }) {
                           <select value={it.section} onChange={(e) => updItem(i, "section", e.target.value)}>
                             <option value="liquid">Liquid (cash/bank)</option>
                             <option value="asset">Asset (appraised)</option>
+                            <option value="support">Spousal support (spouse-owned)</option>
                           </select>
                         </td>
                         <td><input value={it.description} onChange={(e) => updItem(i, "description", e.target.value)} placeholder="e.g. Meezan Bank a/c …" /></td>
@@ -651,10 +655,25 @@ export default function AdminDashboard({ siteUrl }) {
                 <div className="admin-actions">
                   <button type="button" className="btn btn-ghost" onClick={() => addItem("liquid")}>+ Liquid fund</button>
                   <button type="button" className="btn btn-ghost" onClick={() => addItem("asset")}>+ Asset</button>
+                  <button type="button" className="btn btn-ghost" onClick={() => addItem("support")}>+ Spousal support</button>
                 </div>
-                <Field label="Financial support note (e.g. spouse's undertaking)">
-                  <textarea rows={3} value={form.details.support_note || ""} onChange={(e) => setSupport(e.target.value)} />
-                </Field>
+                <p className="admin-muted">
+                  Mark funds legally owned by the spouse as <strong>Spousal support</strong>. They are certified as
+                  committed financial support, not the applicant&rsquo;s personal net worth, and this switches the report
+                  to the IRCC &ldquo;Personal Net Worth &amp; Spousal Financial Support&rdquo; format.
+                </p>
+                <div className="admin-grid">
+                  <Field label="Spouse support letter date">
+                    <input type="date" value={form.details.support_letter_date || ""} onChange={(e) => setDetail("support_letter_date", e.target.value)} />
+                  </Field>
+                  <label className="admin-field">
+                    <span>Support letter is notarised</span>
+                    <select value={form.details.support_notarised ? "yes" : "no"} onChange={(e) => setDetail("support_notarised", e.target.value === "yes")}>
+                      <option value="no">No — signed only</option>
+                      <option value="yes">Yes — signed &amp; notarised</option>
+                    </select>
+                  </label>
+                </div>
               </>
             ) : (
               <>

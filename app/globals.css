@@ -1200,6 +1200,7 @@ body:has(.admin-route) .skip-link { display: none !important; }
 .rep-w-val { text-align: right; white-space: nowrap; }
 .rep-w-group td { background: #efeaf6; font-weight: 700; }
 .rep-w-subtotal td { font-weight: 700; background: #f7f5fb; }
+.rep-w-personal td { font-weight: 700; background: #e6d8f0; letter-spacing: 0.02em; }
 .rep-w-grand td { font-weight: 700; background: var(--purple-deep); color: #fff; }
 .rep-w-empty { color: #888; font-style: italic; }
 .rep-w-note { font-size: 11px; margin: 4px 0 0; text-align: justify; }
@@ -1247,27 +1248,28 @@ body:has(.admin-route) .skip-link { display: none !important; }
 .rep-foot-legal { font-weight: 700; color: var(--purple-deep); font-size: 11px; }
 
 /* Compact mode (dense reports such as the wealth statement) — fit on one page */
-.rep-compact { font-size: 12px; line-height: 1.42; }
-.rep-compact .rep-subject { margin: 7px 0 5px; }
+.rep-compact { font-size: 11.5px; line-height: 1.37; }
+.rep-compact .rep-subject { margin: 6px 0 4px; }
 .rep-compact .rep-table th, .rep-compact .rep-table td { padding: 3px 7px; }
 .rep-compact .rep-w-cert { margin-bottom: 6px; }
-.rep-compact .rep-w-summary { margin-bottom: 7px; }
-.rep-compact .rep-w-summary > div { padding: 5px 9px; }
+.rep-compact .rep-w-summary { margin-bottom: 6px; }
+.rep-compact .rep-w-summary > div { padding: 5px 8px; }
 .rep-compact .rep-w-summary strong { font-size: 13px; }
 .rep-compact .rep-w-summary span { font-size: 10.5px; }
-.rep-compact .rep-w-note { font-size: 10.5px; }
-.rep-compact .rep-rate { margin-bottom: 5px; }
-.rep-compact .rep-remarks h3 { margin: 3px 0 2px; }
-.rep-compact .rep-remarks p { margin-bottom: 4px; }
+.rep-compact .rep-w-note { font-size: 10.5px; margin-top: 3px; }
+.rep-compact .rep-rate { margin-bottom: 3px; }
+.rep-compact .rep-remarks h3 { margin: 2px 0 1px; }
+.rep-compact .rep-remarks p { margin-bottom: 3px; }
 .rep-compact .rep-disclaimers { margin-bottom: 6px; }
 .rep-compact .rep-disclaimers li { font-size: 9.5px; margin-bottom: 2px; }
-.rep-compact .rep-signoff { gap: 12px; margin-bottom: 6px; }
-.rep-compact .rep-qr { width: 82px; height: 82px; }
-.rep-compact .rep-verify { padding: 8px 10px; }
-.rep-compact .rep-verify-text strong { font-size: 11.5px; }
-.rep-compact .rep-verify-text p { font-size: 10px; }
-.rep-compact .rep-sign-imgs { min-height: 82px; }
-.rep-compact .rep-signature { max-height: 92px; max-width: 165px; }
+.rep-compact .rep-signoff { gap: 12px; margin-bottom: 4px; }
+.rep-compact .rep-qr { width: 70px; height: 70px; }
+.rep-compact .rep-verify { padding: 6px 9px; }
+.rep-compact .rep-verify-text strong { font-size: 11px; }
+.rep-compact .rep-verify-text p { font-size: 9.5px; }
+.rep-compact .rep-sign-imgs { min-height: 66px; }
+.rep-compact .rep-signature { max-height: 74px; max-width: 150px; }
+.rep-compact .rep-seal { max-height: 66px; max-width: 74px; }
 
 /* Admin form section labels + thumbnails */
 .admin-sub {
@@ -1329,7 +1331,7 @@ body:has(.admin-route) .skip-link { display: none !important; }
     background: #fff;
   }
   /* Content flows between, clearing the fixed header/footer */
-  .rep-body { padding: 38mm 12mm 19mm; }
+  .rep-body { padding: 35mm 12mm 17mm; }
   .rep-signoff { page-break-inside: avoid; }
   .rep-table tr, .rep-w-table tr { page-break-inside: avoid; }
 }
