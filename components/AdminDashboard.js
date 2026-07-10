@@ -1,8 +1,47 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
+
+// Build a reference like PV/EVL/473/2026 with three random digits, avoiding any
+// reference already in use so it can never collide with (and overwrite) another.
+function genReference(existing, year) {
+  const used = new Set((existing || []).map((r) => r.reference));
+  for (let i = 0; i < 100; i++) {
+    const ref = `PV/EVL/${Math.floor(Math.random() * 900) + 100}/${year}`;
+    if (!used.has(ref)) return ref;
+  }
+  let n = 100, ref = `PV/EVL/${n}/${year}`;
+  while (used.has(ref)) ref = `PV/EVL/${++n}/${year}`;
+  return ref;
+}
+
+// Format a CNIC as xxxxx-xxxxxxx-x (5-7-1), inserting dashes as the admin types
+// and capping at the 13 digits every Pakistani CNIC has.
+function formatCnic(v) {
+  const d = (v || "").replace(/\D/g, "").slice(0, 13);
+  const parts = [d.slice(0, 5)];
+  if (d.length > 5) parts.push(d.slice(5, 12));
+  if (d.length > 12) parts.push(d.slice(12));
+  return parts.filter(Boolean).join("-");
+}
+
+// One-line summary of a valuation report, used when importing it as a
+// net-worth line item so each asset reads clearly in the wealth statement.
+function describeReport(r) {
+  const d = r.details || {};
+  const ref = r.reference ? ` (Ref ${r.reference})` : "";
+  if (r.valuation_type === "gold")
+    return `Gold jewellery${d.purity_karat ? ` ${d.purity_karat}K` : ""}${d.total_grams ? `, ${d.total_grams} g` : ""}${ref}`;
+  if (r.valuation_type === "vehicle")
+    return `${d.make_model || "Vehicle"}${d.model_year ? ` (${d.model_year})` : ""}${d.registration_no ? `, Reg ${d.registration_no}` : ""}${ref}`;
+  if (r.valuation_type === "property")
+    return `${d.nature ? d.nature + " — " : ""}${d.description || "Property"}${ref}`;
+  if (r.valuation_type === "movable")
+    return `${d.asset_type ? d.asset_type + " — " : ""}${d.description || "Movable asset"}${ref}`;
+  return `${r.valuation_type}${ref}`;
+}
 
 const STATUSES = ["under_review", "verified", "rejected"];
 const STATUS_LABEL = { under_review: "Under Review", verified: "Verified", rejected: "Rejected" };
@@ -119,21 +158,126 @@ export default function AdminDashboard({ siteUrl }) {
     loadSettings();
   }, [load, loadSettings]);
 
+  // Auto-assign a reference to a fresh report once reports have loaded (so the
+  // generated number is checked against every existing reference).
+  useEffect(() => {
+    if (loading || editingId) return;
+    setForm((f) => (f.reference ? f : { ...f, reference: genReference(reports, new Date().getFullYear()) }));
+  }, [reports, editingId, loading]);
+
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const setDetail = (k, v) => setForm((f) => ({ ...f, details: { ...f.details, [k]: v } }));
   const resetForm = () => {
     setForm(EMPTY);
     setEditingId(null);
   };
+  const regenRef = () => set("reference", genReference(reports, new Date().getFullYear()));
+
+  // Typing a CNIC that matches an existing client auto-fills their identity
+  // details (name, guardian, passport, address) from their most recent report.
+  const setCnic = (raw) =>
+    setForm((f) => {
+      const v = formatCnic(raw);
+      const next = { ...f, cnic: v };
+      if (editingId) return next;
+      const match = reports.find((r) => (r.cnic || "").trim() === v && v);
+      if (match) {
+        next.owner_name = match.owner_name || next.owner_name;
+        next.owner_guardian = match.owner_guardian || next.owner_guardian;
+        next.guardian_relation = match.guardian_relation || next.guardian_relation;
+        next.passport_no = match.passport_no || next.passport_no;
+        next.present_address = match.present_address || next.present_address;
+      }
+      return next;
+    });
 
   // wealth line-item helpers
   const items = form.details.items || [];
-  const setItems = (next) => setForm((f) => ({ ...f, details: { ...f.details, items: next } }));
+  const setItems = (next) =>
+    setForm((f) => ({
+      ...f,
+      details: { ...f.details, items: typeof next === "function" ? next(f.details.items || []) : next },
+    }));
   const addItem = (section) => setItems([...items, { section, description: "", ownership: "", value_pkr: "" }]);
   const updItem = (i, k, v) => setItems(items.map((it, idx) => (idx === i ? { ...it, [k]: v } : it)));
   const delItem = (i) => setItems(items.filter((_, idx) => idx !== i));
   const setSupport = (v) => setForm((f) => ({ ...f, details: { ...f.details, support_note: v } }));
   const itemsTotal = items.reduce((t, i) => t + (Number(i.value_pkr) || 0), 0);
+
+  // Equivalent value = market value (PKR) ÷ exchange rate, kept in sync whenever
+  // either input changes so it never has to be worked out by hand.
+  const equiv = (pkr, rate) => {
+    const p = Number(pkr), r = Number(rate);
+    return pkr !== "" && rate !== "" && r ? (p / r).toFixed(2) : "";
+  };
+  const setPkr = (v) =>
+    setForm((f) => ({ ...f, market_value_pkr: v, market_value_cad: equiv(v, f.exchange_rate) }));
+  const setRate = (v) =>
+    setForm((f) => ({ ...f, exchange_rate: v, market_value_cad: equiv(f.market_value_pkr, v) }));
+
+  // Wealth automation: group the same client's other valuation reports so a
+  // net-worth statement can be assembled from them in a couple of clicks.
+  const [wealthSourceKey, setWealthSourceKey] = useState("");
+  const [wealthPicks, setWealthPicks] = useState([]);
+  const ownerGroups = useMemo(() => {
+    const m = new Map();
+    for (const r of reports) {
+      if (r.valuation_type === "wealth") continue;
+      const key = (r.cnic || r.owner_name || "").trim();
+      if (!key) continue;
+      if (!m.has(key)) m.set(key, { key, owner_name: r.owner_name, cnic: r.cnic, reports: [] });
+      m.get(key).reports.push(r);
+    }
+    return [...m.values()];
+  }, [reports]);
+  const activeGroup = ownerGroups.find((g) => g.key === wealthSourceKey) || null;
+
+  // An imported valuation report becomes an appraised-asset line, tagged with
+  // source_ref so it stays in sync with the checkboxes and survives save().
+  const assetLine = (r) => ({
+    section: "asset",
+    description: describeReport(r),
+    ownership: r.owner_name || "",
+    value_pkr: r.market_value_pkr ?? "",
+    source_ref: r.reference,
+  });
+
+  function pickWealthOwner(key) {
+    setWealthSourceKey(key);
+    const g = ownerGroups.find((o) => o.key === key);
+    if (!g) {
+      setWealthPicks([]);
+      setItems((prev) => prev.filter((i) => !i.source_ref)); // drop prior client's imports
+      return;
+    }
+    const rep = g.reports[0];
+    setForm((f) => ({
+      ...f,
+      owner_name: f.owner_name || rep.owner_name || "",
+      owner_guardian: f.owner_guardian || rep.owner_guardian || "",
+      guardian_relation: rep.guardian_relation || f.guardian_relation,
+      cnic: f.cnic || rep.cnic || "",
+      passport_no: f.passport_no || rep.passport_no || "",
+      present_address: f.present_address || rep.present_address || "",
+      currency_code: rep.currency_code || f.currency_code,
+      exchange_rate: f.exchange_rate || (rep.exchange_rate ?? "") || "",
+    }));
+    setWealthPicks(g.reports.map((r) => r.id));
+    // Auto-fill every one of this client's reports as asset lines, keeping any
+    // manually-entered items (e.g. liquid funds) and replacing prior imports.
+    setItems((prev) => [...prev.filter((i) => !i.source_ref), ...g.reports.map(assetLine)]);
+  }
+
+  // Ticking/unticking a report adds or removes its asset line automatically.
+  function togglePick(r) {
+    const on = wealthPicks.includes(r.id);
+    setWealthPicks((p) => (on ? p.filter((x) => x !== r.id) : [...p, r.id]));
+    setItems((prev) => {
+      if (on) return prev.filter((i) => i.source_ref !== r.reference);
+      if (prev.some((i) => i.source_ref === r.reference)) return prev;
+      return [...prev, assetLine(r)];
+    });
+  }
 
   async function onPdf(e) {
     const file = e.target.files?.[0];
@@ -162,7 +306,7 @@ export default function AdminDashboard({ siteUrl }) {
         permanent_address: p.permanent_address || "",
         remarks: p.remarks || "",
         market_value_pkr: p.market_value_pkr ?? "",
-        market_value_cad: p.market_value_cad ?? "",
+        market_value_cad: p.market_value_cad ?? equiv(p.market_value_pkr ?? "", p.exchange_rate ?? ""),
         currency_code: p.currency_code || "USD",
         exchange_rate: p.exchange_rate ?? "",
         pdf_filename: d.filename || "",
@@ -223,7 +367,7 @@ export default function AdminDashboard({ siteUrl }) {
       report_date: form.report_date || null,
       valid_until: form.valid_until || null,
       present_address: form.present_address.trim() || null,
-      permanent_address: form.permanent_address.trim() || null,
+      permanent_address: null,
       remarks: form.remarks.trim() || null,
       market_value_pkr: mvp,
       market_value_cad: mvc,
@@ -389,7 +533,12 @@ export default function AdminDashboard({ siteUrl }) {
           <form className="admin-form" onSubmit={save}>
             <h3 className="admin-sub">Report</h3>
             <div className="admin-grid">
-              <Field label="Reference *"><input value={form.reference} onChange={(e) => set("reference", e.target.value)} required /></Field>
+              <Field label="Reference * (auto)">
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <input style={{ flex: 1 }} value={form.reference} onChange={(e) => set("reference", e.target.value)} required />
+                  <button type="button" className="btn btn-ghost" onClick={regenRef} title="Generate a new reference">↻</button>
+                </div>
+              </Field>
               <Field label="Type *">
                 <select value={form.valuation_type} onChange={(e) => set("valuation_type", e.target.value)}>
                   {TYPES.map((t) => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
@@ -413,30 +562,67 @@ export default function AdminDashboard({ siteUrl }) {
                 </select>
               </Field>
               <Field label="Guardian / spouse name"><input value={form.owner_guardian} onChange={(e) => set("owner_guardian", e.target.value)} /></Field>
-              <Field label="CNIC *"><input value={form.cnic} onChange={(e) => set("cnic", e.target.value)} required /></Field>
+              <Field label="CNIC * (auto-fills known clients)"><input value={form.cnic} onChange={(e) => setCnic(e.target.value)} inputMode="numeric" maxLength={15} placeholder="xxxxx-xxxxxxx-x" required /></Field>
               <Field label="Passport"><input value={form.passport_no} onChange={(e) => set("passport_no", e.target.value)} /></Field>
             </div>
-            <Field label="Present address"><textarea rows={2} value={form.present_address} onChange={(e) => set("present_address", e.target.value)} /></Field>
-            <Field label="Permanent address"><textarea rows={2} value={form.permanent_address} onChange={(e) => set("permanent_address", e.target.value)} /></Field>
+            <Field label="Address"><textarea rows={2} value={form.present_address} onChange={(e) => set("present_address", e.target.value)} /></Field>
 
             <h3 className="admin-sub">Valuation</h3>
             <div className="admin-grid">
               {!isWealth && (
-                <Field label="Market value (PKR)"><input type="number" step="0.01" value={form.market_value_pkr} onChange={(e) => set("market_value_pkr", e.target.value)} /></Field>
+                <Field label="Market value (PKR)"><input type="number" step="0.01" value={form.market_value_pkr} onChange={(e) => setPkr(e.target.value)} /></Field>
               )}
               <Field label="Equivalent currency">
                 <select value={form.currency_code} onChange={(e) => set("currency_code", e.target.value)}>
                   {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </Field>
+              <Field label={`Exchange rate (1 ${form.currency_code} = ? PKR)`}><input type="number" step="0.0001" value={form.exchange_rate} onChange={(e) => setRate(e.target.value)} /></Field>
               {!isWealth && (
-                <Field label={`Equivalent value (${form.currency_code})`}><input type="number" step="0.01" value={form.market_value_cad} onChange={(e) => set("market_value_cad", e.target.value)} /></Field>
+                <Field label={`Equivalent value (${form.currency_code}) — auto`}>
+                  <input type="number" step="0.01" value={form.market_value_cad} readOnly tabIndex={-1} title="Automatically calculated from Market value (PKR) ÷ Exchange rate" />
+                </Field>
               )}
-              <Field label={`Exchange rate (1 ${form.currency_code} = ? PKR)`}><input type="number" step="0.0001" value={form.exchange_rate} onChange={(e) => set("exchange_rate", e.target.value)} /></Field>
             </div>
 
             {isWealth ? (
               <>
+                <h3 className="admin-sub">Generate from existing reports</h3>
+                <div className="admin-grid">
+                  <Field label="Pick a client (from their valuation reports)">
+                    <select value={wealthSourceKey} onChange={(e) => pickWealthOwner(e.target.value)}>
+                      <option value="">— Select a client —</option>
+                      {ownerGroups.map((g) => (
+                        <option key={g.key} value={g.key}>
+                          {g.owner_name} {g.cnic ? `· ${g.cnic}` : ""} ({g.reports.length})
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+                {activeGroup && (
+                  <>
+                    <table className="admin-items">
+                      <thead>
+                        <tr><th></th><th>Reference</th><th>Type</th><th>Value (PKR)</th></tr>
+                      </thead>
+                      <tbody>
+                        {activeGroup.reports.map((r) => (
+                          <tr key={r.id}>
+                            <td style={{ width: 28, textAlign: "center" }}>
+                              <input type="checkbox" checked={wealthPicks.includes(r.id)} onChange={() => togglePick(r)} />
+                            </td>
+                            <td className="admin-mono">{r.reference}</td>
+                            <td>{TYPE_LABEL[r.valuation_type] || r.valuation_type}</td>
+                            <td>{r.market_value_pkr != null ? Number(r.market_value_pkr).toLocaleString() : "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <p className="admin-muted">Ticked reports are added below as appraised-asset lines automatically. Add an exchange rate above to show the equivalent value.</p>
+                  </>
+                )}
+
                 <h3 className="admin-sub">Net-worth line items</h3>
                 <p className="admin-muted">
                   Total: PKR {itemsTotal.toLocaleString()} {form.exchange_rate ? `(≈ ${form.currency_code} ${(itemsTotal / Number(form.exchange_rate)).toLocaleString(undefined, { maximumFractionDigits: 2 })})` : ""}

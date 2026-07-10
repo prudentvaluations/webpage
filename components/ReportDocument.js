@@ -20,12 +20,32 @@ const DISCLAIMERS = [
 
 const pkr = (n) => (n == null ? "—" : "PKR " + Number(n).toLocaleString("en-PK", { maximumFractionDigits: 2 }));
 const sec = (n, code) => (n == null ? "—" : `${code} ` + Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 }));
-const fdate = (d) => (!d ? "—" : new Date(d).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" }));
+const fdate = (d) => {
+  if (!d) return "—";
+  // Date-only values (YYYY-MM-DD) must be read as a local calendar date, not
+  // UTC midnight — otherwise a timezone behind UTC renders the previous day
+  // (e.g. "2026-07-03" showing as July 2).
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d));
+  const dt = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(d);
+  return dt.toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
+};
 
 const REL = { wife: ["wife", "w/o"], son: ["son", "s/o"], daughter: ["daughter", "d/o"], husband: ["husband", "h/o"] };
 const relWord = (r) => (REL[r.guardian_relation] || REL.wife)[0];
 const relAbbr = (r) => (REL[r.guardian_relation] || REL.wife)[1];
 const ownerLine = (r) => r.owner_name + (r.owner_guardian ? `, ${relAbbr(r)} ${r.owner_guardian}` : "");
+
+// Compose a one-line vehicle description from the structured fields so it does
+// not have to be re-typed by hand and always mirrors the particulars below it.
+function vehicleDesc(d) {
+  const parts = [];
+  if (d.make_model) parts.push(d.make_model);
+  if (d.model_year) parts.push(`Model ${d.model_year}`);
+  if (d.registration_no) parts.push(`Registration No. ${d.registration_no}`);
+  if (d.odometer_km != null && d.odometer_km !== "")
+    parts.push(`Odometer ${Number(d.odometer_km).toLocaleString("en-US")} km`);
+  return parts.length ? parts.join(", ") : "—";
+}
 
 function subjectFor(r) {
   if (r.valuation_type === "gold") return `Valuation of Gold Jewellery (${r.details?.purity_karat || 22} Karat)`;
@@ -53,14 +73,20 @@ function rowsFor(r) {
     ];
   }
   if (r.valuation_type === "vehicle") {
+    const odometer =
+      d.odometer_km != null && d.odometer_km !== ""
+        ? `${Number(d.odometer_km).toLocaleString("en-US")} km`
+        : "—";
     return [
       ["Registered Owner", owner],
       ["Date of Transfer to Current Owner", d.transfer_date || "—"],
-      ["Vehicle Details", d.make_model || "—"],
-      ["Model", d.model_year || "—"],
+      ["Vehicle Description", vehicleDesc(d)],
+      ["Make & Model", d.make_model || "—"],
+      ["Model Year", d.model_year || "—"],
       ["Registration No.", d.registration_no || "—"],
       ["Engine No.", d.engine_no || "—"],
       ["Chassis No.", d.chassis_no || "—"],
+      ["Odometer Reading", odometer],
       ...valueRows,
     ];
   }
@@ -232,8 +258,7 @@ export default function ReportDocument({ report, qrDataUrl, siteUrl, settings = 
           </div>
         </div>
 
-        {report.present_address && <p className="rep-addr"><strong>Present Address:</strong> {report.present_address}</p>}
-        {report.permanent_address && <p className="rep-addr"><strong>Permanent Address:</strong> {report.permanent_address}</p>}
+        {report.present_address && <p className="rep-addr"><strong>Address:</strong> {report.present_address}</p>}
 
         <h2 className="rep-subject">Subject: {subjectFor(report)}</h2>
 
