@@ -33,10 +33,8 @@ export default function Header() {
               <span className="brand-name-1">Prudent</span>{" "}
               <span className="brand-name-2">Valuations</span>
             </span>
-            <span className="brand-rule" aria-hidden="true">
-              <span className="brand-diamond"></span>
-            </span>
-            <span className="brand-tagline">A Registered Private Firm</span>
+            <span className="brand-rule" aria-hidden="true"></span>
+            <span className="brand-tagline">Certified Valuation Specialists</span>
           </span>
         </a>
 

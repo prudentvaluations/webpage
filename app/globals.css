@@ -126,7 +126,7 @@ img { max-width: 100%; height: auto; display: block; }
   background: linear-gradient(var(--line), #d7d2e2, var(--line));
   flex: none;
 }
-.brand-text { display: flex; flex-direction: column; line-height: 1; }
+.brand-text { display: flex; flex-direction: column; align-items: center; line-height: 1; }
 .brand-name {
   font-family: var(--brand);
   font-weight: 700;
@@ -138,29 +138,17 @@ img { max-width: 100%; height: auto; display: block; }
 .brand-name-1 { color: var(--purple-deep); }
 .brand-name-2 { color: var(--orange); }
 .brand-rule {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 5px 0 4px;
-}
-.brand-rule::before,
-.brand-rule::after {
-  content: "";
-  flex: 1;
   height: 1px;
-  background: var(--line);
-}
-.brand-diamond {
-  width: 5px;
-  height: 5px;
-  background: var(--orange);
-  transform: rotate(45deg);
-  flex: none;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, var(--line), transparent);
+  margin: 6px 0 5px;
 }
 .brand-tagline {
   font-family: var(--sans);
   font-size: 0.64rem;
-  letter-spacing: 0.01em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--muted);
   white-space: nowrap;
 }
