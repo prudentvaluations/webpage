@@ -36,7 +36,7 @@ export default function Header() {
             <span className="brand-rule" aria-hidden="true">
               <span className="brand-diamond"></span>
             </span>
-            <span className="brand-tagline">SECP &middot; PBA &middot; ICAP Registered</span>
+            <span className="brand-tagline">A Registered Private Firm</span>
           </span>
         </a>
 
