@@ -345,6 +345,9 @@ img { max-width: 100%; height: auto; display: block; }
   gap: 1.25rem;
 }
 .cards > li { flex: 1 1 300px; max-width: 360px; display: flex; }
+/* When the <li> is itself the card (not a wrapper around .card/.card-link),
+   stack its contents so the heading and text don't lay out in a row. */
+.cards > li.card { flex-direction: column; }
 .cards > li > .card,
 .card-link { width: 100%; }
 .card {
