@@ -68,9 +68,9 @@ export default function AboutPage() {
               should strengthen your case rather than complicate it.
             </p>
             <p className="prose-note">
-              Prudent Valuations operates as a registered private limited valuation practice in Pakistan,
-              holding <strong>SECP, PBA and ICAP</strong> registrations. This gives our reports the standing
-              that banks, courts, and authorities expect.
+              Prudent Valuations operates as a registered private valuation practice in Pakistan, led by
+              <strong> certified valuation specialists</strong>. This gives our reports the standing that
+              banks, courts, and authorities expect.
             </p>
           </div>
 
