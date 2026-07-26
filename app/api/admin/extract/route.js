@@ -18,9 +18,17 @@ export async function POST(req) {
   if (!file || typeof file.arrayBuffer !== "function") {
     return NextResponse.json({ error: "No PDF file provided." }, { status: 400 });
   }
+  // Cap upload size to avoid memory exhaustion when parsing.
+  const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+  if (typeof file.size === "number" && file.size > MAX_BYTES) {
+    return NextResponse.json({ error: "PDF is too large (max 10 MB)." }, { status: 413 });
+  }
 
   try {
     const buf = Buffer.from(await file.arrayBuffer());
+    if (buf.length > MAX_BYTES) {
+      return NextResponse.json({ error: "PDF is too large (max 10 MB)." }, { status: 413 });
+    }
     const text = await extractTextFromPdf(buf);
     const parsed = parseReportText(text);
     return NextResponse.json({ parsed, filename: file.name });

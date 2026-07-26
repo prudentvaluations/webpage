@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabaseAdmin";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -7,6 +8,15 @@ export const dynamic = "force-dynamic";
 const onlyDigits = (s) => (s || "").replace(/\D/g, "");
 
 export async function POST(req) {
+  // Throttle lookups: 30 per minute per IP (defence against reference/CNIC abuse).
+  const rl = rateLimit(`verify:${clientIp(req)}`, { max: 30, windowMs: 60_000 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { found: false, error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+    );
+  }
+
   let body;
   try {
     body = await req.json();
