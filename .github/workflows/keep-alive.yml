@@ -1,0 +1,36 @@
+name: Keep Supabase awake
+
+# Supabase free-tier projects pause after 7 days with no activity. This job runs
+# a tiny query twice a week so the database stays active well within that window.
+#
+# Setup: add a repository secret named SUPABASE_DB_URL
+#   (Settings -> Secrets and variables -> Actions -> New repository secret)
+#   with the project's Postgres connection string. If connecting via the pooler,
+#   make sure the string ends with ?sslmode=require.
+
+on:
+  schedule:
+    # Mondays and Thursdays at 08:17 UTC (odd minute avoids the top-of-hour
+    # queue where GitHub delays scheduled runs). Max gap ~3-4 days, well under 7.
+    - cron: "17 8 * * 1,4"
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions: {} # this job needs no repository permissions
+
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::SUPABASE_DB_URL secret is not set (Settings -> Secrets and variables -> Actions)."
+            exit 1
+          fi
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -tAc "select 'keep-alive ok @ ' || now();"
